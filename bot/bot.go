@@ -2,6 +2,7 @@ package bot
 
 import (
 	"fmt"
+	"golang-discord-bot/command"
 	"golang-discord-bot/config"
 
 	"github.com/bwmarrin/discordgo"
@@ -43,7 +44,10 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	if m.Content == "ping" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "pong")
+	response, err := command.Resolver.Run(m)
+	if err != nil {
+		s.ChannelMessageSend(m.ChannelID, err.Error())
+	} else {
+		s.ChannelMessageSend(m.ChannelID, response)
 	}
 }
