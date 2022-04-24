@@ -5,12 +5,23 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 )
 
 type DiceRoll struct {
+}
+
+func (d *DiceRoll) Match(content string) (matched bool, err error) {
+	matched, err = regexp.MatchString("^[0-9]+[d][0-9]+$", content)
+	return
+}
+
+func (d *DiceRoll) Doc() (documentation string) {
+	//TODO: Implementar
+	return
 }
 
 func (d *DiceRoll) Run(content string) (response string, err error) {

@@ -3,38 +3,36 @@ package command
 import (
 	"golang-discord-bot/command/diceRoll"
 	pingpong "golang-discord-bot/command/pingPong"
-	"regexp"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-var Resolver CommandResolver = CommandResolver{
-	PingPong: &pingpong.PingPong{},
-	DiceRoll: &diceRoll.DiceRoll{},
-}
+var Resolver CommandResolver = CommandResolver{}
 
 type CommandResolver struct {
-	PingPong CommandInterface
-	DiceRoll CommandInterface
-}
-
-func GetCommandRecolver() CommandResolver {
-	return Resolver
 }
 
 type CommandInterface interface {
+	Match(content string) (matched bool, err error)
+	Doc() (documentation string)
 	Run(content string) (response string, err error)
 }
 
+var commandResolverSlice []CommandInterface = []CommandInterface{
+	&pingpong.PingPong{},
+	&diceRoll.DiceRoll{},
+}
+
 func (c *CommandResolver) Run(m *discordgo.MessageCreate) (response string, err error) {
-
-	if m.Content == "ping" {
-		return c.PingPong.Run(m.Content)
-	}
-
-	match, err := regexp.MatchString("^[0-9]+[d][0-9]+$", m.Content)
-	if match {
-		return c.DiceRoll.Run(m.Content)
+	var matched bool
+	for _, command := range commandResolverSlice {
+		matched, err = command.Match(m.Content)
+		if err != nil {
+			return
+		}
+		if matched {
+			return command.Run(m.Content)
+		}
 	}
 	return
 }
